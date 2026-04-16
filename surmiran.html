@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Surmiran Vokabeltrainer</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="app-header">
+        <h1>Surmiran Vokabeltrainer</h1>
+        <p>Lerne Alltagswörter im Idiom Surmiran Karte für Karte.</p>
+      </header>
+
+      <nav class="tabs" aria-label="Hauptnavigation">
+        <button class="tab-button active" data-view="learn">Lernen</button>
+        <button class="tab-button" data-view="stats">Statistik</button>
+      </nav>
+
+      <main>
+        <section id="learn-view" class="view active" aria-labelledby="learn-title">
+          <h2 id="learn-title" class="sr-only">Lernansicht mit Karteikarten</h2>
+
+          <div class="card">
+            <p class="card-label">Deutsch</p>
+            <div id="word-de" class="word word-de">Haus</div>
+
+            <p class="card-label">Surmiran</p>
+            <div id="word-rm" class="word word-rm hidden-answer">Tippe auf „Lösung anzeigen“</div>
+
+            <div id="card-meta" class="card-meta"></div>
+          </div>
+
+          <div class="button-grid">
+            <button id="show-solution-button" class="primary">Lösung anzeigen</button>
+            <button id="correct-button" disabled>Richtig</button>
+            <button id="wrong-button" disabled>Falsch</button>
+            <button id="next-button">Weiter</button>
+          </div>
+        </section>
+
+        <section id="stats-view" class="view" aria-labelledby="stats-title">
+          <h2 id="stats-title">Statistik</h2>
+
+          <div class="stats-grid">
+            <article class="stat-box">
+              <span class="stat-label">Wörter gesamt</span>
+              <strong id="stat-total">0</strong>
+            </article>
+            <article class="stat-box">
+              <span class="stat-label">Bereits geübt</span>
+              <strong id="stat-practised">0</strong>
+            </article>
+            <article class="stat-box">
+              <span class="stat-label">Mit Fehlern</span>
+              <strong id="stat-wrong">0</strong>
+            </article>
+            <article class="stat-box">
+              <span class="stat-label">Meist richtig</span>
+              <strong id="stat-mostly-correct">0</strong>
+            </article>
+          </div>
+
+          <div class="lists">
+            <article class="list-box">
+              <h3>Schwierigste Wörter</h3>
+              <ul id="hardest-list" class="word-list"></ul>
+            </article>
+            <article class="list-box">
+              <h3>Einfachste Wörter</h3>
+              <ul id="easiest-list" class="word-list"></ul>
+            </article>
+          </div>
+
+          <button id="reset-progress-button" class="secondary">Fortschritt zurücksetzen</button>
+        </section>
+      </main>
+    </div>
+
+    <script src="surmiran.js"></script>
+  </body>
+</html>
