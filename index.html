@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+    />
+    <title>Romanisch Vokabeltrainer</title>
+    <style>
+      :root {
+        --bg: #f6f4ed;
+        --panel: #fffdf8;
+        --panel-border: #ddd5c7;
+        --text: #1d1d1b;
+        --muted: #6e675e;
+        --accent: #1f6f50;
+        --accent-strong: #14543c;
+        --danger: #ab3f2f;
+        --danger-strong: #842d21;
+        --button: #e9e3d7;
+        --shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        background: linear-gradient(180deg, #f9f6ef 0%, #f2eee4 100%);
+        color: var(--text);
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .app {
+        width: min(100%, 720px);
+        margin: 0 auto;
+        padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+      }
+
+      .app-header {
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .app-header h1 {
+        margin: 0 0 0.35rem;
+        font-size: clamp(1.8rem, 4vw, 2.5rem);
+      }
+
+      .app-header p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .tab-button,
+      .button-grid button,
+      .secondary {
+        border: 1px solid var(--panel-border);
+        border-radius: 14px;
+        padding: 0.95rem 1rem;
+        background: var(--button);
+        color: var(--text);
+        cursor: pointer;
+        transition: transform 0.15s ease, background 0.15s ease;
+      }
+
+      .tab-button:hover,
+      .button-grid button:hover,
+      .secondary:hover {
+        transform: translateY(-1px);
+      }
+
+      .tab-button.active {
+        background: var(--accent);
+        color: #ffffff;
+        border-color: var(--accent);
+      }
+
+      .view {
+        display: none;
+      }
+
+      .view.active {
+        display: block;
+      }
+
+      .card,
+      .stat-box,
+      .list-box {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+      }
+
+      .card {
+        padding: 1.5rem;
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .card-label {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .word {
+        word-break: break-word;
+        font-size: clamp(2rem, 7vw, 3.4rem);
+        font-weight: 700;
+        line-height: 1.1;
+      }
+
+      .word-rm {
+        color: var(--accent-strong);
+        min-height: 3.8rem;
+      }
+
+      .hidden-answer {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      .card-meta {
+        margin-top: 1rem;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .button-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .button-grid button {
+        min-height: 56px;
+      }
+
+      .primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #ffffff;
+      }
+
+      #wrong-button {
+        background: #f6ddd9;
+        border-color: #e7b1a8;
+        color: var(--danger-strong);
+      }
+
+      #correct-button {
+        background: #dceddf;
+        border-color: #aad0b9;
+        color: var(--accent-strong);
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .stat-box,
+      .list-box {
+        padding: 1rem;
+      }
+
+      .stat-box strong {
+        display: block;
+        margin-top: 0.4rem;
+        font-size: 2rem;
+      }
+
+      .stat-label {
+        color: var(--muted);
+      }
+
+      .lists {
+        display: grid;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .list-box h3 {
+        margin-top: 0;
+      }
+
+      .word-list {
+        margin: 0;
+        padding-left: 1.2rem;
+      }
+
+      .word-list li {
+        margin-bottom: 0.45rem;
+      }
+
+      .secondary {
+        width: 100%;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      @media (max-width: 560px) {
+        .app {
+          padding-left: 0.85rem;
+          padding-right: 0.85rem;
+        }
+
+        .card {
+          min-height: 280px;
+          padding: 1.2rem;
+        }
+
+        .button-grid,
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="app-header">
+        <h1>Romanisch Vokabeltrainer</h1>
+        <p>Lerne Alltagswörter Karte für Karte.</p>
+      </header>
+
+      <nav class="tabs" aria-label="Hauptnavigation">
+        <button class="tab-button active" data-view="learn" type="button">Lernen</button>
+        <button class="tab-button" data-view="stats" type="button">Statistik</button>
+      </nav>
+
+      <main>
+        <section id="learn-view" class="view active" aria-labelledby="learn-title">
+          <h2 id="learn-title" class="sr-only">Lernansicht mit Karteikarten</h2>
+
+          <div class="card">
+            <p class="card-label">Deutsch</p>
+            <div id="word-de" class="word word-de">Haus</div>
+
+            <p class="card-label">Romanisch</p>
+            <div id="word-rm" class="word word-rm hidden-answer">Tippe auf „Lösung anzeigen“</div>
+
+            <div id="card-meta" class="card-meta"></div>
+          </div>
+
+          <div class="button-grid">
+            <button id="show-solution-button" class="primary" type="button">Lösung anzeigen</button>
+            <button id="correct-button" type="button" disabled>Richtig</button>
+            <button id="wrong-button" type="button" disabled>Falsch</button>
+            <button id="next-button" type="button">Weiter</button>
+          </div>
+        </section>
+
+        <section id="stats-view" class="view" aria-labelledby="stats-title">
+          <h2 id="stats-title">Statistik</h2>
+
+          <div class="stats-grid">
+            <article class="stat-box">
+              <span class="stat-label">Wörter gesamt</span>
+              <strong id="stat-total">0</strong>
+            </article>
+            <article class="stat-box">
+              <span class="stat-label">Bereits geübt</span>
+              <strong id="stat-practised">0</strong>
+            </article>
+            <article class="stat-box">
+              <span class="stat-label">Mit Fehlern</span>
+              <strong id="stat-wrong">0</strong>
+            </article>
+            <article class="stat-box">
+              <span class="stat-label">Meist richtig</span>
+              <strong id="stat-mostly-correct">0</strong>
+            </article>
+          </div>
+
+          <div class="lists">
+            <article class="list-box">
+              <h3>Schwierigste Wörter</h3>
+              <ul id="hardest-list" class="word-list"></ul>
+            </article>
+            <article class="list-box">
+              <h3>Einfachste Wörter</h3>
+              <ul id="easiest-list" class="word-list"></ul>
+            </article>
+          </div>
+
+          <button id="reset-progress-button" class="secondary" type="button">
+            Fortschritt zurücksetzen
+          </button>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const STORAGE_KEY = "romansh-vocabulary-progress";
+      let memoryStorage = null;
+
+      // Neue Wörter kannst du direkt hier ergänzen.
+      // Wichtig: Jede Zeile braucht eine eindeutige id, ein deutsches Wort und die Romanisch-Übersetzung.
+      const vocabulary = [
+        { id: "1", de: "Haus", rm: "chasa", category: "Alltag" },
+        { id: "2", de: "Wasser", rm: "aua", category: "Alltag" },
+        { id: "3", de: "Brot", rm: "paun", category: "Essen" },
+        { id: "4", de: "Milch", rm: "latg", category: "Essen" },
+        { id: "5", de: "Apfel", rm: "mail", category: "Essen" },
+        { id: "6", de: "Hund", rm: "chaun", category: "Tiere" },
+        { id: "7", de: "Katze", rm: "giat", category: "Tiere" },
+        { id: "8", de: "Mutter", rm: "mumma", category: "Familie" },
+        { id: "9", de: "Vater", rm: "bab", category: "Familie" },
+        { id: "10", de: "Kind", rm: "uffant", category: "Familie" },
+        { id: "11", de: "Schule", rm: "scola", category: "Orte" },
+        { id: "12", de: "Straße", rm: "via", category: "Orte" },
+        { id: "13", de: "Auto", rm: "auto", category: "Transport" },
+        { id: "14", de: "Fahrrad", rm: "velo", category: "Transport" },
+        { id: "15", de: "Tag", rm: "di", category: "Zeit" },
+        { id: "16", de: "Nacht", rm: "notg", category: "Zeit" },
+        { id: "17", de: "essen", rm: "mangiar", category: "Verben" },
+        { id: "18", de: "trinken", rm: "baiver", category: "Verben" },
+        { id: "19", de: "gehen", rm: "ir", category: "Verben" },
+        { id: "20", de: "kommen", rm: "vegnir", category: "Verben" },
+        { id: "21", de: "gut", rm: "bun", category: "Adjektive" },
+        { id: "22", de: "klein", rm: "pign", category: "Adjektive" },
+        { id: "23", de: "groß", rm: "grond", category: "Adjektive" },
+        { id: "24", de: "danke", rm: "engraziel", category: "Alltag" },
+        { id: "25", de: "bitte", rm: "per plaschair", category: "Alltag" }
+      ];
+
+      const defaultProgress = () => ({
+        correctCount: 0,
+        wrongCount: 0,
+        shownCount: 0,
+        lastSeen: null,
+        difficultyScore: 1
+      });
+
+      const state = {
+        progress: loadProgress(),
+        currentWordId: null,
+        solutionVisible: false,
+        hasAnsweredCurrent: false
+      };
+
+      const elements = {
+        tabButtons: document.querySelectorAll(".tab-button"),
+        learnView: document.getElementById("learn-view"),
+        statsView: document.getElementById("stats-view"),
+        wordDe: document.getElementById("word-de"),
+        wordRm: document.getElementById("word-rm"),
+        cardMeta: document.getElementById("card-meta"),
+        showSolutionButton: document.getElementById("show-solution-button"),
+        correctButton: document.getElementById("correct-button"),
+        wrongButton: document.getElementById("wrong-button"),
+        nextButton: document.getElementById("next-button"),
+        statTotal: document.getElementById("stat-total"),
+        statPractised: document.getElementById("stat-practised"),
+        statWrong: document.getElementById("stat-wrong"),
+        statMostlyCorrect: document.getElementById("stat-mostly-correct"),
+        hardestList: document.getElementById("hardest-list"),
+        easiestList: document.getElementById("easiest-list"),
+        resetProgressButton: document.getElementById("reset-progress-button")
+      };
+
+      function readStoredProgress() {
+        if (memoryStorage) {
+          return memoryStorage;
+        }
+
+        try {
+          return localStorage.getItem(STORAGE_KEY);
+        } catch (error) {
+          console.warn("localStorage ist in dieser lokalen Datei-Ansicht nicht verfuegbar.", error);
+          return null;
+        }
+      }
+
+      function writeStoredProgress(value) {
+        memoryStorage = value;
+
+        try {
+          localStorage.setItem(STORAGE_KEY, value);
+        } catch (error) {
+          console.warn("Fortschritt kann hier nur temporaer gespeichert werden.", error);
+        }
+      }
+
+      function loadProgress() {
+        const saved = readStoredProgress();
+
+        if (!saved) {
+          return createInitialProgress();
+        }
+
+        try {
+          const parsed = JSON.parse(saved);
+          return mergeWithDefaults(parsed);
+        } catch (error) {
+          console.warn("Gespeicherter Fortschritt konnte nicht gelesen werden. Die App startet neu.", error);
+          return createInitialProgress();
+        }
+      }
+
+      function createInitialProgress() {
+        const progress = {};
+
+        vocabulary.forEach((word) => {
+          progress[word.id] = defaultProgress();
+        });
+
+        return progress;
+      }
+
+      function mergeWithDefaults(savedProgress) {
+        const merged = createInitialProgress();
+
+        vocabulary.forEach((word) => {
+          if (savedProgress[word.id]) {
+            merged[word.id] = {
+              ...defaultProgress(),
+              ...savedProgress[word.id]
+            };
+          }
+        });
+
+        return merged;
+      }
+
+      function saveProgress() {
+        writeStoredProgress(JSON.stringify(state.progress));
+      }
+
+      function getWordById(wordId) {
+        return vocabulary.find((word) => word.id === wordId);
+      }
+
+      function calculateDifficulty(progressEntry) {
+        const baseWeight = 1;
+        const wrongBoost = progressEntry.wrongCount * 2;
+        const correctReduction = progressEntry.correctCount * 0.35;
+        const unseenBoost = progressEntry.shownCount === 0 ? 1.5 : 0;
+        const score = baseWeight + wrongBoost + unseenBoost - correctReduction;
+
+        return Math.max(0.5, Number(score.toFixed(2)));
+      }
+
+      function updateDifficultyForWord(wordId) {
+        const entry = state.progress[wordId];
+        entry.difficultyScore = calculateDifficulty(entry);
+      }
+
+      function getWeightedWordPool() {
+        return vocabulary.map((word) => {
+          const progressEntry = state.progress[word.id];
+          updateDifficultyForWord(word.id);
+
+          let adjustedWeight = progressEntry.difficultyScore;
+
+          // Vermeidet direkte Wiederholungen beim lokalen Offline-Lernen.
+          if (word.id === state.currentWordId && vocabulary.length > 2) {
+            adjustedWeight *= 0.15;
+          }
+
+          return {
+            word,
+            weight: Math.max(0.1, adjustedWeight)
+          };
+        });
+      }
+
+      function chooseNextWord() {
+        const weightedPool = getWeightedWordPool();
+        const totalWeight = weightedPool.reduce((sum, item) => sum + item.weight, 0);
+        let randomPoint = Math.random() * totalWeight;
+
+        for (const item of weightedPool) {
+          randomPoint -= item.weight;
+          if (randomPoint <= 0) {
+            return item.word;
+          }
+        }
+
+        return weightedPool[weightedPool.length - 1].word;
+      }
+
+      function showCurrentWord() {
+        const currentWord = getWordById(state.currentWordId);
+        const progressEntry = state.progress[state.currentWordId];
+
+        elements.wordDe.textContent = currentWord.de;
+        elements.wordRm.textContent = state.solutionVisible ? currentWord.rm : 'Tippe auf „Lösung anzeigen“';
+        elements.wordRm.classList.toggle("hidden-answer", !state.solutionVisible);
+        elements.cardMeta.textContent =
+          `Kategorie: ${currentWord.category} | Gezeigt: ${progressEntry.shownCount} | ` +
+          `Richtig: ${progressEntry.correctCount} | Falsch: ${progressEntry.wrongCount}`;
+
+        elements.showSolutionButton.disabled = state.solutionVisible;
+        elements.correctButton.disabled = !state.solutionVisible || state.hasAnsweredCurrent;
+        elements.wrongButton.disabled = !state.solutionVisible || state.hasAnsweredCurrent;
+      }
+
+      function loadNextWord() {
+        const nextWord = chooseNextWord();
+        state.currentWordId = nextWord.id;
+        state.solutionVisible = false;
+        state.hasAnsweredCurrent = false;
+
+        const entry = state.progress[nextWord.id];
+        entry.shownCount += 1;
+        entry.lastSeen = new Date().toISOString();
+        updateDifficultyForWord(nextWord.id);
+        saveProgress();
+
+        showCurrentWord();
+        renderStats();
+      }
+
+      function revealSolution() {
+        state.solutionVisible = true;
+        showCurrentWord();
+      }
+
+      function recordAnswer(isCorrect) {
+        if (!state.solutionVisible || state.hasAnsweredCurrent) {
+          return;
+        }
+
+        const entry = state.progress[state.currentWordId];
+
+        if (isCorrect) {
+          entry.correctCount += 1;
+        } else {
+          entry.wrongCount += 1;
+        }
+
+        updateDifficultyForWord(state.currentWordId);
+        saveProgress();
+        state.hasAnsweredCurrent = true;
+        showCurrentWord();
+
+        window.setTimeout(loadNextWord, 250);
+      }
+
+      function switchView(viewName) {
+        const showLearn = viewName === "learn";
+
+        elements.learnView.classList.toggle("active", showLearn);
+        elements.statsView.classList.toggle("active", !showLearn);
+
+        elements.tabButtons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.view === viewName);
+        });
+
+        if (!showLearn) {
+          renderStats();
+        }
+      }
+
+      function getRankedWords(compareFn) {
+        return vocabulary
+          .map((word) => ({
+            ...word,
+            progress: state.progress[word.id]
+          }))
+          .sort(compareFn)
+          .slice(0, 5);
+      }
+
+      function renderWordList(listElement, words, emptyMessage) {
+        listElement.innerHTML = "";
+
+        if (words.length === 0) {
+          const item = document.createElement("li");
+          item.textContent = emptyMessage;
+          listElement.appendChild(item);
+          return;
+        }
+
+        words.forEach((word) => {
+          const item = document.createElement("li");
+          item.textContent = `${word.de} - ${word.rm} (${word.progress.difficultyScore})`;
+          listElement.appendChild(item);
+        });
+      }
+
+      function renderStats() {
+        const progressEntries = Object.values(state.progress);
+        const practisedCount = progressEntries.filter((entry) => entry.shownCount > 0).length;
+        const wrongCount = progressEntries.filter((entry) => entry.wrongCount > 0).length;
+        const mostlyCorrectCount = progressEntries.filter(
+          (entry) => entry.correctCount >= 2 && entry.correctCount > entry.wrongCount
+        ).length;
+
+        vocabulary.forEach((word) => updateDifficultyForWord(word.id));
+
+        const hardestWords = getRankedWords(
+          (a, b) => b.progress.difficultyScore - a.progress.difficultyScore || b.progress.wrongCount - a.progress.wrongCount
+        );
+
+        const easiestWords = getRankedWords(
+          (a, b) => a.progress.difficultyScore - b.progress.difficultyScore || b.progress.correctCount - a.progress.correctCount
+        ).filter((word) => word.progress.shownCount > 0);
+
+        elements.statTotal.textContent = String(vocabulary.length);
+        elements.statPractised.textContent = String(practisedCount);
+        elements.statWrong.textContent = String(wrongCount);
+        elements.statMostlyCorrect.textContent = String(mostlyCorrectCount);
+
+        renderWordList(elements.hardestList, hardestWords, "Noch keine Daten");
+        renderWordList(elements.easiestList, easiestWords, "Übe zuerst ein paar Wörter");
+      }
+
+      function resetProgress() {
+        const confirmed = window.confirm("Gesamten gespeicherten Lernfortschritt zurücksetzen?");
+
+        if (!confirmed) {
+          return;
+        }
+
+        state.progress = createInitialProgress();
+        saveProgress();
+        renderStats();
+        loadNextWord();
+      }
+
+      function bindEvents() {
+        elements.showSolutionButton.addEventListener("click", revealSolution);
+        elements.correctButton.addEventListener("click", () => recordAnswer(true));
+        elements.wrongButton.addEventListener("click", () => recordAnswer(false));
+        elements.nextButton.addEventListener("click", loadNextWord);
+        elements.resetProgressButton.addEventListener("click", resetProgress);
+
+        elements.tabButtons.forEach((button) => {
+          button.addEventListener("click", () => switchView(button.dataset.view));
+        });
+      }
+
+      function init() {
+        bindEvents();
+        renderStats();
+        loadNextWord();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
